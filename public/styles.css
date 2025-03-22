@@ -28,23 +28,59 @@ body {
 }
 
 .container {
-    max-width: 800px;
+    max-width: 1200px;
     margin: 0 auto;
     padding: 20px;
+    display: grid;
+    grid-template-columns: 1fr minmax(300px, 1fr);
+    grid-template-rows: auto 1fr;
+    column-gap: 20px;
+    row-gap: 20px;
+}
+
+@media (max-width: 1024px) {
+    .container {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto 1fr;
+    }
+}
+
+.left-column {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.right-column {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
 }
 
 h1 {
     text-align: center;
     color: var(--text-primary);
-    margin-bottom: 20px;
+    margin: 0;
     font-weight: 600;
+    grid-column: 1 / -1;
+    background-color: var(--bg-secondary);
+    padding: 6px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border-color);
+    font-size: 24px;
+    letter-spacing: 0.5px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
 }
 
 .status-bar {
     background-color: var(--bg-secondary);
     padding: 15px;
     border-radius: 8px;
-    margin-bottom: 20px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
     border: 1px solid var(--border-color);
 }
@@ -53,9 +89,9 @@ h1 {
     background-color: var(--bg-secondary);
     padding: 20px;
     border-radius: 8px;
-    margin-bottom: 20px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
     border: 1px solid var(--border-color);
+    flex: 1;  /* Make control panel take remaining space */
 }
 
 .input-group {
@@ -124,6 +160,9 @@ button:disabled {
     border-radius: 8px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
     border: 1px solid var(--border-color);
+    flex: 1;  /* Make log panel take remaining space */
+    display: flex;
+    flex-direction: column;
 }
 
 .log-panel h2 {
@@ -137,7 +176,8 @@ button:disabled {
     background-color: var(--bg-tertiary);
     padding: 15px;
     border-radius: 6px;
-    height: 200px;
+    flex: 1;
+    min-height: 400px;
     overflow-y: auto;
     font-family: 'Fira Code', 'Consolas', monospace;
     font-size: 14px;

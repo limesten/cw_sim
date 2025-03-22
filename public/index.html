@@ -10,74 +10,78 @@
     <div class="container">
         <h1>Checkweigher Simulator</h1>
         
-        <div class="status-bar">
-            <div class="connection-status">
-                Connected Clients: <span id="clientCount">0</span>
-            </div>
-        </div>
-
-        <div class="control-panel">
-            <div class="input-group">
-                <label for="weightInput">Weight Value (g):</label>
-                <input type="number" id="weightInput" value="1234" min="0" step="1">
+        <div class="left-column">
+            <div class="status-bar">
+                <div class="connection-status">
+                    Connected Clients: <span id="clientCount">0</span>
+                </div>
             </div>
 
-            <div class="input-group">
-                <label>Control Characters:</label>
-                <select id="controlChars">
-                    <option value="STXETX">STX/ETX</option>
-                    <option value="CRLF" selected>CR/LF</option>
-                </select>
-            </div>
-
-            <div class="button-group">
-                <button id="sendOnce">Send Once</button>
-            </div>
-
-            <div class="continuous-controls">
+            <div class="control-panel">
                 <div class="input-group">
-                    <label for="weightsPerMinute">Weights per Minute:</label>
-                    <input type="number" id="weightsPerMinute" value="60" min="1" max="600">
+                    <label for="weightInput">Weight Value (g):</label>
+                    <input type="number" id="weightInput" value="1234" min="0" step="1">
                 </div>
 
-                <div class="weight-variations">
-                    <h3>Weight Variations</h3>
-                    
-                    <div class="variation-group underweight">
-                        <h4>Underweight</h4>
-                        <div class="input-group">
-                            <label for="underweightFreq">Frequency (%):</label>
-                            <input type="number" id="underweightFreq" value="1" min="0" max="100" step="1">
-                        </div>
-                        <div class="input-group">
-                            <label for="underweightAmount">Amount (%):</label>
-                            <input type="number" id="underweightAmount" value="10" min="0" max="100" step="1">
-                        </div>
-                    </div>
-
-                    <div class="variation-group overweight">
-                        <h4>Overweight</h4>
-                        <div class="input-group">
-                            <label for="overweightFreq">Frequency (%):</label>
-                            <input type="number" id="overweightFreq" value="20" min="0" max="100" step="1">
-                        </div>
-                        <div class="input-group">
-                            <label for="overweightAmount">Amount (%):</label>
-                            <input type="number" id="overweightAmount" value="10" min="0" max="100" step="1">
-                        </div>
-                    </div>
+                <div class="input-group">
+                    <label>Control Characters:</label>
+                    <select id="controlChars">
+                        <option value="STXETX">STX/ETX</option>
+                        <option value="CRLF" selected>CR/LF</option>
+                    </select>
                 </div>
 
                 <div class="button-group">
-                    <button id="startContinuous">Start Continuous</button>
-                    <button id="stopContinuous" disabled>Stop</button>
+                    <button id="sendOnce">Send Once</button>
+                </div>
+
+                <div class="continuous-controls">
+                    <div class="input-group">
+                        <label for="weightsPerMinute">Weights per Minute:</label>
+                        <input type="number" id="weightsPerMinute" value="60" min="1" max="600">
+                    </div>
+
+                    <div class="weight-variations">
+                        <h3>Weight Variations</h3>
+                        
+                        <div class="variation-group underweight">
+                            <h4>Underweight</h4>
+                            <div class="input-group">
+                                <label for="underweightFreq">Frequency (%):</label>
+                                <input type="number" id="underweightFreq" value="1" min="0" max="100" step="1">
+                            </div>
+                            <div class="input-group">
+                                <label for="underweightAmount">Amount (%):</label>
+                                <input type="number" id="underweightAmount" value="10" min="0" max="100" step="1">
+                            </div>
+                        </div>
+
+                        <div class="variation-group overweight">
+                            <h4>Overweight</h4>
+                            <div class="input-group">
+                                <label for="overweightFreq">Frequency (%):</label>
+                                <input type="number" id="overweightFreq" value="20" min="0" max="100" step="1">
+                            </div>
+                            <div class="input-group">
+                                <label for="overweightAmount">Amount (%):</label>
+                                <input type="number" id="overweightAmount" value="10" min="0" max="100" step="1">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="button-group">
+                        <button id="startContinuous">Start Continuous</button>
+                        <button id="stopContinuous" disabled>Stop</button>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="log-panel">
-            <h2>Message Log</h2>
-            <div id="messageLog"></div>
+        <div class="right-column">
+            <div class="log-panel">
+                <h2>Message Log</h2>
+                <div id="messageLog"></div>
+            </div>
         </div>
     </div>
     <script src="app.js"></script>
