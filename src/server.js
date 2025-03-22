@@ -21,6 +21,11 @@ const CONTROL_CHARS = {
     }
 };
 
+// Global settings that apply to all test clients
+const globalSettings = {
+    controlChars: CONTROL_CHARS.CRLF
+};
+
 // Create HTTP server instance
 const server = http.createServer(app);
 
@@ -41,7 +46,6 @@ wss.on('connection', (ws, req) => {
     
     // Initialize client settings with defaults
     const clientSettings = {
-        controlChars: CONTROL_CHARS.CRLF, // Default to CRLF
         continuousMode: false,
         interval: null,
         isTestClient: isTestClient
@@ -59,7 +63,7 @@ wss.on('connection', (ws, req) => {
                     broadcastWeight(message);
                     break;
                 case 'settings':
-                    handleSettingsUpdate(ws, message);
+                    handleSettingsUpdate(message);
                     break;
                 case 'startContinuous':
                     startContinuousTransmission(ws, message);
@@ -103,7 +107,7 @@ function broadcastWeight(message) {
     // Send to all test clients
     for (const [ws, settings] of clients.entries()) {
         if (settings.isTestClient) {
-            const formattedWeight = formatWeight(weight, settings.controlChars);
+            const formattedWeight = formatWeight(weight, globalSettings.controlChars);
             console.log('Sending weight to test client:', formatWeightForDisplay(formattedWeight));
             ws.send(formattedWeight);
         }
@@ -129,12 +133,9 @@ function updateFrontendClientCount() {
 }
 
 // Settings update handler
-function handleSettingsUpdate(ws, message) {
-    const clientSettings = clients.get(ws);
-    if (!clientSettings) return;
-
+function handleSettingsUpdate(message) {
     if (message.controlChars && CONTROL_CHARS[message.controlChars]) {
-        clientSettings.controlChars = CONTROL_CHARS[message.controlChars];
+        globalSettings.controlChars = CONTROL_CHARS[message.controlChars];
         console.log(`Updated control chars to: ${message.controlChars}`);
     }
 }
