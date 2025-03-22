@@ -34,18 +34,21 @@ const wss = new WebSocketServer({ server });
 const clients = new Map(); // Using Map to store client settings
 
 // WebSocket connection handler
-wss.on('connection', (ws) => {
-    console.log('New client connected');
+wss.on('connection', (ws, req) => {
+    // Check if this is a frontend client (will send JSON messages) or a test client (receives raw data)
+    const isTestClient = !req.headers.origin;
+    console.log(`New ${isTestClient ? 'test' : 'frontend'} client connected`);
     
     // Initialize client settings with defaults
     const clientSettings = {
         controlChars: CONTROL_CHARS.CRLF, // Default to CRLF
         continuousMode: false,
-        interval: null
+        interval: null,
+        isTestClient: isTestClient
     };
     clients.set(ws, clientSettings);
 
-    // Handle incoming messages
+    // Handle incoming messages (only from frontend)
     ws.on('message', (data) => {
         try {
             const message = JSON.parse(data);
@@ -53,7 +56,7 @@ wss.on('connection', (ws) => {
             
             switch (message.type) {
                 case 'weight':
-                    handleWeightTransmission(ws, message);
+                    broadcastWeight(message);
                     break;
                 case 'settings':
                     handleSettingsUpdate(ws, message);
@@ -74,9 +77,11 @@ wss.on('connection', (ws) => {
 
     // Handle client disconnection
     ws.on('close', () => {
-        console.log('Client disconnected');
+        const clientType = clients.get(ws)?.isTestClient ? 'test' : 'frontend';
+        console.log(`${clientType} client disconnected`);
         stopContinuousTransmission(ws);
         clients.delete(ws);
+        updateFrontendClientCount();
     });
 
     // Handle errors
@@ -84,22 +89,43 @@ wss.on('connection', (ws) => {
         console.error('WebSocket error:', error);
         stopContinuousTransmission(ws);
         clients.delete(ws);
+        updateFrontendClientCount();
     });
+
+    // Update frontend with new client count
+    updateFrontendClientCount();
 });
 
-// Weight transmission handler
-function handleWeightTransmission(ws, message) {
-    const clientSettings = clients.get(ws);
-    if (!clientSettings) return;
-
+// Broadcast weight to test clients
+function broadcastWeight(message) {
     const { weight } = message;
-    const formattedWeight = formatWeight(weight, clientSettings.controlChars);
     
-    // Log the formatted weight for debugging (server-side only)
-    console.log('Sending weight:', formatWeightForDisplay(formattedWeight));
-    
-    // Send raw data to client
-    ws.send(formattedWeight);
+    // Send to all test clients
+    for (const [ws, settings] of clients.entries()) {
+        if (settings.isTestClient) {
+            const formattedWeight = formatWeight(weight, settings.controlChars);
+            console.log('Sending weight to test client:', formatWeightForDisplay(formattedWeight));
+            ws.send(formattedWeight);
+        }
+    }
+}
+
+// Update frontend clients with test client count
+function updateFrontendClientCount() {
+    let testClientCount = 0;
+    for (const settings of clients.values()) {
+        if (settings.isTestClient) testClientCount++;
+    }
+
+    // Send count to all frontend clients
+    for (const [ws, settings] of clients.entries()) {
+        if (!settings.isTestClient) {
+            ws.send(JSON.stringify({
+                type: 'clientCount',
+                count: testClientCount
+            }));
+        }
+    }
 }
 
 // Settings update handler
@@ -144,7 +170,7 @@ function startContinuousTransmission(ws, message) {
 
     clientSettings.continuousMode = true;
     clientSettings.interval = setInterval(() => {
-        handleWeightTransmission(ws, { weight });
+        broadcastWeight({ weight });
     }, interval);
 }
 
