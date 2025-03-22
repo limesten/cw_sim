@@ -39,6 +39,35 @@
                     <label for="weightsPerMinute">Weights per Minute:</label>
                     <input type="number" id="weightsPerMinute" value="60" min="1" max="600">
                 </div>
+
+                <div class="weight-variations">
+                    <h3>Weight Variations</h3>
+                    
+                    <div class="variation-group underweight">
+                        <h4>Underweight</h4>
+                        <div class="input-group">
+                            <label for="underweightFreq">Frequency (%):</label>
+                            <input type="number" id="underweightFreq" value="1" min="0" max="100" step="1">
+                        </div>
+                        <div class="input-group">
+                            <label for="underweightAmount">Amount (%):</label>
+                            <input type="number" id="underweightAmount" value="10" min="0" max="100" step="1">
+                        </div>
+                    </div>
+
+                    <div class="variation-group overweight">
+                        <h4>Overweight</h4>
+                        <div class="input-group">
+                            <label for="overweightFreq">Frequency (%):</label>
+                            <input type="number" id="overweightFreq" value="20" min="0" max="100" step="1">
+                        </div>
+                        <div class="input-group">
+                            <label for="overweightAmount">Amount (%):</label>
+                            <input type="number" id="overweightAmount" value="10" min="0" max="100" step="1">
+                        </div>
+                    </div>
+                </div>
+
                 <div class="button-group">
                     <button id="startContinuous">Start Continuous</button>
                     <button id="stopContinuous" disabled>Stop</button>

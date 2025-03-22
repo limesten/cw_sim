@@ -165,13 +165,40 @@ function startContinuousTransmission(ws, message) {
     // Stop any existing continuous transmission
     stopContinuousTransmission(ws);
 
-    const { weight, weightsPerMinute } = message;
+    const { weight, weightsPerMinute, variations } = message;
+    const baseWeight = parseInt(weight);
     const interval = Math.floor(60000 / weightsPerMinute); // Convert weights per minute to milliseconds
 
     clientSettings.continuousMode = true;
     clientSettings.interval = setInterval(() => {
-        broadcastWeight({ weight });
+        // Calculate the weight with variations
+        const finalWeight = calculateVariedWeight(baseWeight, variations);
+        broadcastWeight({ weight: finalWeight.toString() });
     }, interval);
+}
+
+// Calculate weight with random variations based on probabilities
+function calculateVariedWeight(baseWeight, variations) {
+    const random = Math.random(); // Random number between 0 and 1
+    
+    if (variations) {
+        const { underweight, overweight } = variations;
+        
+        // Check for underweight
+        if (random < underweight.frequency) {
+            const reduction = baseWeight * underweight.amount;
+            return Math.round(baseWeight - reduction);
+        }
+        
+        // Check for overweight (adding frequencies)
+        if (random < (underweight.frequency + overweight.frequency)) {
+            const addition = baseWeight * overweight.amount;
+            return Math.round(baseWeight + addition);
+        }
+    }
+    
+    // Return base weight if no variation applies
+    return baseWeight;
 }
 
 function stopContinuousTransmission(ws) {

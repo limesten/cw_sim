@@ -8,15 +8,11 @@ const weightsPerMinuteInput = document.getElementById('weightsPerMinute');
 const messageLog = document.getElementById('messageLog');
 const clientCountSpan = document.getElementById('clientCount');
 
-// Ensure weight input only accepts whole numbers
-weightInput.addEventListener('input', () => {
-    const value = parseInt(weightInput.value);
-    if (value < 0) {
-        weightInput.value = 0;
-    } else {
-        weightInput.value = Math.floor(value);
-    }
-});
+// Weight variation elements
+const underweightFreqInput = document.getElementById('underweightFreq');
+const underweightAmountInput = document.getElementById('underweightAmount');
+const overweightFreqInput = document.getElementById('overweightFreq');
+const overweightAmountInput = document.getElementById('overweightAmount');
 
 // WebSocket setup
 const ws = new WebSocket(`ws://${window.location.host}`);
@@ -55,7 +51,9 @@ sendOnceButton.addEventListener('click', () => {
 });
 
 startContinuousButton.addEventListener('click', () => {
-    startContinuous();
+    if (validateWeightVariations()) {
+        startContinuous();
+    }
 });
 
 stopContinuousButton.addEventListener('click', () => {
@@ -67,21 +65,37 @@ controlCharsSelect.addEventListener('change', () => {
 });
 
 // Helper functions
+function validateWeightVariations() {
+    const underFreq = parseFloat(underweightFreqInput.value);
+    const overFreq = parseFloat(overweightFreqInput.value);
+    const totalFreq = underFreq + overFreq;
+
+    if (totalFreq > 100) {
+        logMessage('Error: Total of under and overweight frequencies cannot exceed 100%');
+        return false;
+    }
+
+    const underAmount = parseFloat(underweightAmountInput.value);
+    const overAmount = parseFloat(overweightAmountInput.value);
+
+    if (underAmount >= 100 || overAmount >= 100) {
+        logMessage('Error: Weight variation amounts must be less than 100%');
+        return false;
+    }
+
+    return true;
+}
+
 function updateClientCount(count) {
     clientCountSpan.textContent = count;
     logMessage(`Connected test clients: ${count}`);
 }
 
 function sendWeight() {
-    const weight = parseInt(weightInput.value);
-    if (isNaN(weight) || weight < 0) {
-        logMessage('Error: Please enter a valid weight in grams');
-        return;
-    }
-
+    const weight = weightInput.value;
     const message = {
         type: 'weight',
-        weight: weight.toString() // Send as string to maintain exact value
+        weight: weight
     };
     ws.send(JSON.stringify(message));
     logMessage(`Sent weight: ${weight}g`);
@@ -102,14 +116,26 @@ function startContinuous() {
 
     const message = {
         type: 'startContinuous',
-        weight: weight.toString(), // Send as string to maintain exact value
-        weightsPerMinute: weightsPerMinute
+        weight: weight.toString(),
+        weightsPerMinute: weightsPerMinute,
+        variations: {
+            underweight: {
+                frequency: parseFloat(underweightFreqInput.value) / 100,
+                amount: parseFloat(underweightAmountInput.value) / 100
+            },
+            overweight: {
+                frequency: parseFloat(overweightFreqInput.value) / 100,
+                amount: parseFloat(overweightAmountInput.value) / 100
+            }
+        }
     };
     ws.send(JSON.stringify(message));
     
     startContinuousButton.disabled = true;
     stopContinuousButton.disabled = false;
     logMessage(`Started continuous transmission at ${weightsPerMinute} weights/minute with ${weight}g`);
+    logMessage(`Underweight: ${underweightFreqInput.value}% at -${underweightAmountInput.value}%`);
+    logMessage(`Overweight: ${overweightFreqInput.value}% at +${overweightAmountInput.value}%`);
 }
 
 function stopContinuous() {
@@ -144,6 +170,10 @@ function enableControls(enabled) {
     startContinuousButton.disabled = !enabled;
     controlCharsSelect.disabled = !enabled;
     weightsPerMinuteInput.disabled = !enabled;
+    underweightFreqInput.disabled = !enabled;
+    underweightAmountInput.disabled = !enabled;
+    overweightFreqInput.disabled = !enabled;
+    overweightAmountInput.disabled = !enabled;
     
     if (!enabled) {
         stopContinuousButton.disabled = true;
