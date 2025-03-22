@@ -1,12 +1,56 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Checkweigher Simulator</title>
-    <link rel="stylesheet" href="./css/style.css">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>CW sim</h1>
+    <div class="container">
+        <h1>Checkweigher Simulator</h1>
+        
+        <div class="status-bar">
+            <div class="connection-status">
+                Connected Clients: <span id="clientCount">0</span>
+            </div>
+        </div>
 
-    <script src="./js/script.js"></script>
+        <div class="control-panel">
+            <div class="input-group">
+                <label for="weightInput">Weight Value (g):</label>
+                <input type="number" id="weightInput" value="1234" min="0" step="1">
+            </div>
+
+            <div class="input-group">
+                <label>Control Characters:</label>
+                <select id="controlChars">
+                    <option value="STXETX">STX/ETX</option>
+                    <option value="CRLF" selected>CR/LF</option>
+                </select>
+            </div>
+
+            <div class="button-group">
+                <button id="sendOnce">Send Once</button>
+            </div>
+
+            <div class="continuous-controls">
+                <div class="input-group">
+                    <label for="weightsPerMinute">Weights per Minute:</label>
+                    <input type="number" id="weightsPerMinute" value="60" min="1" max="600">
+                </div>
+                <div class="button-group">
+                    <button id="startContinuous">Start Continuous</button>
+                    <button id="stopContinuous" disabled>Stop</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="log-panel">
+            <h2>Message Log</h2>
+            <div id="messageLog"></div>
+        </div>
+    </div>
+    <script src="app.js"></script>
 </body>
 </html>
