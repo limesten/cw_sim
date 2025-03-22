@@ -6,6 +6,7 @@ const startContinuousButton = document.getElementById('startContinuous');
 const stopContinuousButton = document.getElementById('stopContinuous');
 const weightsPerMinuteInput = document.getElementById('weightsPerMinute');
 const messageLog = document.getElementById('messageLog');
+const clientCountSpan = document.getElementById('clientCount');
 
 // Ensure weight input only accepts whole numbers
 weightInput.addEventListener('input', () => {
@@ -29,11 +30,23 @@ ws.onopen = () => {
 ws.onclose = () => {
     logMessage('Disconnected from server');
     enableControls(false);
+    clientCountSpan.textContent = '0';
 };
 
 ws.onerror = (error) => {
     logMessage('WebSocket error: ' + error.message);
     enableControls(false);
+};
+
+ws.onmessage = (event) => {
+    try {
+        const message = JSON.parse(event.data);
+        if (message.type === 'clientCount') {
+            updateClientCount(message.count);
+        }
+    } catch (error) {
+        console.error('Error processing message:', error);
+    }
 };
 
 // UI event handlers
@@ -54,6 +67,11 @@ controlCharsSelect.addEventListener('change', () => {
 });
 
 // Helper functions
+function updateClientCount(count) {
+    clientCountSpan.textContent = count;
+    logMessage(`Connected test clients: ${count}`);
+}
+
 function sendWeight() {
     const weight = parseInt(weightInput.value);
     if (isNaN(weight) || weight < 0) {
