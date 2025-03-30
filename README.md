@@ -1,12 +1,12 @@
 # Checkweigher Simulator
 
-A web-based simulator for testing checkweigher integrations. This tool simulates a checkweigher device that sends weight measurements over WebSocket connections, supporting both single and continuous weight transmissions with configurable weight variations.
+A web-based simulator for testing checkweigher integrations. This tool simulates a checkweigher device that sends weight measurements over tcp/ip socket connections, supporting both single and continuous weight transmissions with configurable weight variations.
 
 ## Features
 
 ### Browser Frontend
-- **Weight Input**: Enter custom weight values to transmit
-- **Control Characters**: Choose between CR/LF and STX/ETX transmission formats
+- **Weight Input**: Enter weight values to transmit
+- **Control Characters**: Choose control characters to send with the weight value
 - **Transmission Modes**:
   - Single transmission: Send one weight value
   - Continuous mode: Automatically send weight values at specified intervals
@@ -55,7 +55,7 @@ npm start
 3. Run the test client (in a separate terminal):
 ```bash
 cd test-client
-node index.js
+npm start
 ```
 
 ## Usage Guide
@@ -64,7 +64,7 @@ node index.js
 
 1. In the browser interface:
    - Enter a base weight value
-   - Select desired control characters (CR/LF or STX/ETX)
+   - Select desired control characters
    - Configure weight variations if needed:
      - Underweight frequency (0-100%)
      - Underweight amount (0-100%)
@@ -88,12 +88,10 @@ npm test -- --coverage     # Generate coverage report
 ## Technical Details
 
 ### Communication Protocol
-- WebSocket-based communication
-- Supports two control character formats:
-  - CR/LF (Carriage Return/Line Feed)
-  - STX/ETX (Start of Text/End of Text)
+- WebSocket-based communication with frontend clients
+- TCP/IP socket communication with weight data consumers
 
-### Weight Variation Algorithm
+### Weight Variations
 - Randomized weight variations based on configured probabilities
 - Independent calculation for each transmission
 - Maintains specified frequency distributions for under/overweight values
@@ -103,19 +101,12 @@ npm test -- --coverage     # Generate coverage report
 ### Project Structure
 ```
 cw_sim/
-├── public/           # Static frontend files
+├── public/          # Static frontend files
 ├── src/             # Server source code
 ├── test-client/     # Test client implementation
 └── tests/           # Test suites
     └── unit/        # Unit tests
 ```
-
-### Running Tests
-The project includes comprehensive test coverage for:
-- Weight calculation logic
-- Control character formatting
-- Input validation
-- WebSocket communication
 
 ## Contributing
 
