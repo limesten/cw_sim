@@ -26,7 +26,6 @@ ws.onopen = () => {
 ws.onclose = () => {
     logMessage('Disconnected from server');
     enableControls(false);
-    clientCountSpan.textContent = '0';
 };
 
 ws.onerror = (error) => {
@@ -37,9 +36,6 @@ ws.onerror = (error) => {
 ws.onmessage = (event) => {
     try {
         const message = JSON.parse(event.data);
-        if (message.type === 'clientCount') {
-            updateClientCount(message.count);
-        }
     } catch (error) {
         console.error('Error processing message:', error);
     }
@@ -84,11 +80,6 @@ function validateWeightVariations() {
     }
 
     return true;
-}
-
-function updateClientCount(count) {
-    clientCountSpan.textContent = count;
-    logMessage(`Connected test clients: ${count}`);
 }
 
 function sendWeight() {

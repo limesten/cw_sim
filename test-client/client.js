@@ -1,17 +1,8 @@
-const WebSocket = require('ws');
-const readline = require('readline');
+const net = require('node:net');
 
 // Configuration
-const DEFAULT_PORT = 3000;
-const DEFAULT_HOST = 'localhost';
-
-// Parse command line arguments for host and port
-const args = process.argv.slice(2);
-const host = args[0] || DEFAULT_HOST;
-const port = args[1] || DEFAULT_PORT;
-
-// Create WebSocket connection
-const ws = new WebSocket(`ws://${host}:${port}`);
+const PORT = 3001;
+const HOST = 'localhost';
 
 // Control character display mapping
 const CONTROL_CHAR_DISPLAY = {
@@ -23,69 +14,40 @@ const CONTROL_CHAR_DISPLAY = {
 
 // Format raw data for display
 function formatDataForDisplay(data) {
-    return Array.from(data).map(char => {
-        const charCode = char.charCodeAt(0);
-        if (charCode < 32) { // Control characters
-            return CONTROL_CHAR_DISPLAY[char] || `<${charCode.toString(16).padStart(2, '0')}>`;
+    // replace control char with control char display
+    const chars = data.toString().split('');
+    const displayData = chars.map(char => {
+        // check if char exists as key in control char display
+        if (Object.keys(CONTROL_CHAR_DISPLAY).includes(char)) {
+            return CONTROL_CHAR_DISPLAY[char];
         }
         return char;
     }).join('');
+    return displayData;
 }
 
-// WebSocket event handlers
-ws.on('open', () => {
-    console.log(`Connected to checkweigher simulator at ${host}:${port}`);
-    console.log('Waiting for weight values...\n');
+// Create TCP client
+const client = net.createConnection({
+    host: HOST,
+    port: PORT
+}, () => {
+    console.log('Connected to server');
 });
 
-ws.on('message', (data) => {
-    const timestamp = new Date().toLocaleTimeString();
-    const formattedData = formatDataForDisplay(data.toString());
-    console.log(`[${timestamp}] Received: ${formattedData}`);
+// Handle incoming data
+client.on('data', (data) => {
+    console.log('Received data:', formatDataForDisplay(data));
 });
 
-ws.on('close', () => {
-    console.log('Disconnected from checkweigher simulator');
-    process.exit(0);
+// Handle connection errors
+client.on('error', (err) => {
+    console.error('Connection error:', err);
 });
 
-ws.on('error', (error) => {
-    console.error('WebSocket error:', error.message);
-    process.exit(1);
+client.on('close', () => {
+    console.log('Connection closed');
 });
 
-// Handle process termination
-process.on('SIGINT', () => {
-    console.log('\nClosing connection...');
-    ws.close();
+client.on('end', () => {
+    console.log('Connection ended');
 });
-
-// Setup readline interface for interactive commands
-const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-});
-
-// Display help message
-console.log('\nTest Client Commands:');
-console.log('  Press Ctrl+C to exit');
-console.log('  Type "clear" to clear the console');
-console.log('  Type "help" to show this message\n');
-
-// Handle user input
-rl.on('line', (input) => {
-    switch (input.trim().toLowerCase()) {
-        case 'clear':
-            console.clear();
-            console.log('Console cleared. Waiting for weight values...\n');
-            break;
-        case 'help':
-            console.log('\nTest Client Commands:');
-            console.log('  Press Ctrl+C to exit');
-            console.log('  Type "clear" to clear the console');
-            console.log('  Type "help" to show this message\n');
-            break;
-        default:
-            console.log('Unknown command. Type "help" for available commands.\n');
-    }
-}); 

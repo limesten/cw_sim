@@ -1,9 +1,11 @@
 const express = require('express');
 const { WebSocketServer } = require('ws');
 const http = require('http');
+const net = require('node:net');
 
 const app = express();
-const port = 3000;
+const wsPort = 3000;
+const tcpPort = 3001;
 
 // Control character configurations
 const CONTROL_CHARS = {
@@ -27,32 +29,32 @@ const globalSettings = {
 };
 
 // Create HTTP server instance
-const server = http.createServer(app);
+const wsServer = http.createServer(app);
+
+// Create TCP server instance
+const tcpServer = net.createServer();
 
 // Serve static files
 app.use(express.static('public'));
 
 // Create WebSocket server
-const wss = new WebSocketServer({ server });
+const wss = new WebSocketServer({ server: wsServer });
 
 // Store connected clients with their settings
 const clients = new Map(); // Using Map to store client settings
 
-// WebSocket connection handler
+// Store connected tcp clients
+let tcpClients = [];
+
+// WebSocket connection handler (frontend clients)
 wss.on('connection', (ws, req) => {
-    // Check if this is a frontend client (will send JSON messages) or a test client (receives raw data)
-    const isTestClient = !req.headers.origin;
-    console.log(`New ${isTestClient ? 'test' : 'frontend'} client connected`);
-    
     // Initialize client settings with defaults
     const clientSettings = {
         continuousMode: false,
         interval: null,
-        isTestClient: isTestClient
     };
     clients.set(ws, clientSettings);
 
-    // Handle incoming messages (only from frontend)
     ws.on('message', (data) => {
         try {
             const message = JSON.parse(data);
@@ -81,11 +83,8 @@ wss.on('connection', (ws, req) => {
 
     // Handle client disconnection
     ws.on('close', () => {
-        const clientType = clients.get(ws)?.isTestClient ? 'test' : 'frontend';
-        console.log(`${clientType} client disconnected`);
         stopContinuousTransmission(ws);
         clients.delete(ws);
-        updateFrontendClientCount();
     });
 
     // Handle errors
@@ -93,42 +92,33 @@ wss.on('connection', (ws, req) => {
         console.error('WebSocket error:', error);
         stopContinuousTransmission(ws);
         clients.delete(ws);
-        updateFrontendClientCount();
     });
 
-    // Update frontend with new client count
-    updateFrontendClientCount();
 });
 
-// Broadcast weight to test clients
+// TCP connection handler
+tcpServer.on('connection', (socket) => {
+    console.log('TCP client connected');
+    tcpClients.push(socket);
+
+    socket.on('data', (data) => {
+        console.log('Received data from TCP client:', data);
+    });
+    socket.on('close', () => {
+        tcpClients = tcpClients.filter(client => client !== socket);
+        console.log('TCP client disconnected');
+    });
+});
+
+// Broadcast weight to tcp clients
 function broadcastWeight(message) {
     const { weight } = message;
     
-    // Send to all test clients
-    for (const [ws, settings] of clients.entries()) {
-        if (settings.isTestClient) {
-            const formattedWeight = formatWeight(weight, globalSettings.controlChars);
-            console.log('Sending weight to test client:', formatWeightForDisplay(formattedWeight));
-            ws.send(formattedWeight);
-        }
-    }
-}
-
-// Update frontend clients with test client count
-function updateFrontendClientCount() {
-    let testClientCount = 0;
-    for (const settings of clients.values()) {
-        if (settings.isTestClient) testClientCount++;
-    }
-
-    // Send count to all frontend clients
-    for (const [ws, settings] of clients.entries()) {
-        if (!settings.isTestClient) {
-            ws.send(JSON.stringify({
-                type: 'clientCount',
-                count: testClientCount
-            }));
-        }
+    // Send to all tcp clients
+    for (const client of tcpClients) {
+        const formattedWeight = formatWeight(weight, globalSettings.controlChars);
+        console.log('Sending weight to tcp client:', formatWeightForDisplay(formattedWeight));
+        client.write(formattedWeight);
     }
 }
 
@@ -213,8 +203,13 @@ function stopContinuousTransmission(ws) {
     clientSettings.continuousMode = false;
 }
 
-// Start the server
-server.listen(port, () => {
-    console.log(`Server running on port ${port}`);
-    console.log(`WebSocket server is ready`);
+// Start the ws server
+wsServer.listen(wsPort, () => {
+    console.log(`Server running on port ${wsPort}`);
 });
+
+// Start the tcp server
+tcpServer.listen(tcpPort, () => {
+    console.log(`TCP server is ready on port ${tcpPort}`);
+});
+
