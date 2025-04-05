@@ -56,10 +56,6 @@ stopContinuousButton.addEventListener('click', () => {
     stopContinuous();
 });
 
-controlCharsSelect.addEventListener('change', () => {
-    updateControlChars();
-});
-
 // Helper functions
 function validateWeightVariations() {
     const underFreq = parseFloat(underweightFreqInput.value);
@@ -89,13 +85,13 @@ function sendWeight() {
         weight: weight
     };
     ws.send(JSON.stringify(message));
-    logMessage(`Sent weight: ${weight}g`);
+    logMessage(`Sent weight: ${weight}`);
 }
 
 function startContinuous() {
     const weight = parseInt(weightInput.value);
     if (isNaN(weight) || weight < 0) {
-        logMessage('Error: Please enter a valid weight in grams');
+        logMessage('Error: Weight needs to be a positive number');
         return;
     }
 
@@ -140,16 +136,6 @@ function stopContinuous() {
     logMessage('Stopped continuous transmission');
 }
 
-function updateControlChars() {
-    const controlChars = controlCharsSelect.value;
-    const message = {
-        type: 'settings',
-        controlChars: controlChars
-    };
-    ws.send(JSON.stringify(message));
-    logMessage(`Updated control characters to: ${controlChars}`);
-}
-
 function logMessage(message) {
     const messageDiv = document.createElement('div');
     messageDiv.textContent = `${new Date().toLocaleTimeString()} - ${message}`;
@@ -159,7 +145,6 @@ function logMessage(message) {
 function enableControls(enabled) {
     sendOnceButton.disabled = !enabled;
     startContinuousButton.disabled = !enabled;
-    controlCharsSelect.disabled = !enabled;
     weightsPerMinuteInput.disabled = !enabled;
     underweightFreqInput.disabled = !enabled;
     underweightAmountInput.disabled = !enabled;

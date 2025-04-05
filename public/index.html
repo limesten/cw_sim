@@ -7,29 +7,17 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    
     <div class="container">
-        <h1>Checkweigher Simulator</h1>
+        
         
         <div class="left-column">
-            <div class="status-bar">
-                <div class="connection-status">
-                    Connected Clients: <span id="clientCount">0</span>
-                </div>
-            </div>
+            <h1>Checkweigher Simulator</h1>
 
             <div class="control-panel">
                 <div class="input-group">
-                    <label for="weightInput">Weight Value (g):</label>
-                    <input type="number" id="weightInput" value="1234" min="0" step="1">
-                </div>
-
-                <div class="input-group">
-                    <label>Control Characters:</label>
-                    <!-- TODO: Let user build their own message with common control chars -->
-                    <select id="controlChars">
-                        <option value="STXETX">STX/ETX</option>
-                        <option value="CRLF" selected>CR/LF</option>
-                    </select>
+                    <label for="weightInput">Weight String:</label>
+                    <input type="text" id="weightInput" value="123" min="0">
                 </div>
 
                 <div class="button-group">
@@ -45,6 +33,8 @@
                     <div class="weight-variations">
                         <h3>Weight Variations</h3>
                         
+
+                        <!-- TODO: Automatically balance percentages to equal 100 -->
                         <div class="variation-group underweight">
                             <h4>Underweight</h4>
                             <div class="input-group">
@@ -79,6 +69,11 @@
         </div>
 
         <div class="right-column">
+            <div class="status-bar">
+                <div class="connection-status">
+                    Connected Clients: <span id="clientCount">0</span>
+                </div>
+            </div>
             <div class="log-panel">
                 <h2>Message Log</h2>
                 <div id="messageLog"></div>

@@ -7,27 +7,6 @@ const app = express();
 const wsPort = 3000;
 const tcpPort = 3001;
 
-// Control character configurations
-const CONTROL_CHARS = {
-    STXETX: {
-        name: 'STXETX',
-        prefix: '\x02', // STX (Start of Text)
-        suffix: '\x03', // ETX (End of Text)
-        format: (weight) => `${CONTROL_CHARS.STXETX.prefix}${weight}${CONTROL_CHARS.STXETX.suffix}`
-    },
-    CRLF: {
-        name: 'CRLF',
-        prefix: '',
-        suffix: '\r\n', // CR LF
-        format: (weight) => `${weight}${CONTROL_CHARS.CRLF.suffix}`
-    }
-};
-
-// Global settings that apply to all test clients
-const globalSettings = {
-    controlChars: CONTROL_CHARS.CRLF
-};
-
 // Create HTTP server instance
 const wsServer = http.createServer(app);
 
@@ -63,9 +42,6 @@ wss.on('connection', (ws, req) => {
             switch (message.type) {
                 case 'weight':
                     broadcastWeight(message);
-                    break;
-                case 'settings':
-                    handleSettingsUpdate(message);
                     break;
                 case 'startContinuous':
                     startContinuousTransmission(ws, message);
@@ -116,36 +92,9 @@ function broadcastWeight(message) {
     
     // Send to all tcp clients
     for (const client of tcpClients) {
-        const formattedWeight = formatWeight(weight, globalSettings.controlChars);
-        console.log('Sending weight to tcp client:', formatWeightForDisplay(formattedWeight));
-        client.write(formattedWeight);
+        console.log('Sending weight to tcp client:', weight);
+        client.write(weight);
     }
-}
-
-// Settings update handler
-function handleSettingsUpdate(message) {
-    if (message.controlChars && CONTROL_CHARS[message.controlChars]) {
-        globalSettings.controlChars = CONTROL_CHARS[message.controlChars];
-        console.log(`Updated control chars to: ${message.controlChars}`);
-    }
-}
-
-// Format weight with control characters
-function formatWeight(weight, controlChars) {
-    return controlChars.format(weight);
-}
-
-// Format weight for display in logs (server-side only)
-function formatWeightForDisplay(raw) {
-    return raw.replace(/[\x00-\x1F]/g, char => {
-        const special = {
-            '\x02': '<STX>',
-            '\x03': '<ETX>',
-            '\r': '<CR>',
-            '\n': '<LF>'
-        };
-        return special[char] || `<${char.charCodeAt(0).toString(16).padStart(2, '0')}>`;
-    });
 }
 
 // Continuous transmission handlers

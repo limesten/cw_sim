@@ -14,10 +14,6 @@
     --accent-hover: #6c84f3;
     --accent-disabled: #3d4a8c;
     --border-color: #3a3d44;
-    --success-bg: #1c3b2c;
-    --success-border: #2d5c45;
-    --warning-bg: #332b00;
-    --warning-border: #665500;
 }
 
 body {
@@ -76,10 +72,12 @@ h1 {
 
 .status-bar {
     background-color: var(--bg-secondary);
-    padding: 15px;
+    padding: 6px;
     border-radius: 8px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
     border: 1px solid var(--border-color);
+    height: 40px;
+    text-align: center;
 }
 
 .control-panel {
@@ -232,13 +230,13 @@ button:disabled {
 }
 
 .underweight {
-    background-color: var(--warning-bg);
-    border: 1px solid var(--warning-border);
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--bg-tertiary);
 }
 
 .overweight {
-    background-color: var(--success-bg);
-    border: 1px solid var(--success-border);
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--bg-tertiary);
 }
 
 /* Scrollbar Styling */
