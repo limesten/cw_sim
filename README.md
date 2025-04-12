@@ -1,27 +1,26 @@
 # Checkweigher Simulator
 
-A web-based simulator for testing checkweigher integrations. This tool simulates a checkweigher device that sends weight measurements over tcp/ip socket connections, supporting both single and continuous weight transmissions with configurable weight variations.
+This tool simulates a checkweigher device that sends weight measurements over tcp/ip socket connections, supporting both single and continuous weight transmissions with configurable weight variations.
 
 ## Features
 
 ### Browser Frontend
 - **Weight Input**: Enter weight values to transmit
-- **Control Characters**: Choose control characters to send with the weight value
+- **Prefix and Suffix**: Input characters that will appear before and after the weight value (optional). It is also possible to input hexadecimal values. Example for character return: \x0D
 - **Transmission Modes**:
   - Single transmission: Send one weight value
   - Continuous mode: Automatically send weight values at specified intervals
-- **Weight Variations**: Configure random weight variations to simulate real-world scenarios
+- **Weight Variations**:
   - Set underweight and overweight frequencies (percentage of occurrences)
   - Define variation amounts as percentage of base weight
   - Example: 1% underweight frequency with 10% weight reduction
 - **Real-time Monitoring**:
   - Message log showing transmission events
   - Connected clients counter
-  - Visual feedback for weight transmissions
 
 ### Test Client
 - Terminal-based client for receiving weight transmissions
-- Logs received weight values with control characters
+- Logs received weight values
 - Useful for testing and verification
 
 ## Getting Started
@@ -58,31 +57,13 @@ cd test-client
 npm start
 ```
 
-## Usage Guide
-
-### Setting Up Weight Transmissions
-
-1. In the browser interface:
-   - Enter a base weight value
-   - Select desired control characters
-   - Configure weight variations if needed:
-     - Underweight frequency (0-100%)
-     - Underweight amount (0-100%)
-     - Overweight frequency (0-100%)
-     - Overweight amount (0-100%)
-
-2. Choose transmission mode:
-   - Click "Send Once" for single transmission
-   - Click "Start Continuous" for continuous transmission
-   - Use "Stop" to halt continuous transmission
-
 ### Testing
 
 Run the test suite:
 ```bash
-npm test                    # Run all tests
-npm run test:watch         # Run tests in watch mode
-npm test -- --coverage     # Generate coverage report
+npm test
+npm run test:watch
+npm test -- --coverage
 ```
 
 ## Technical Details

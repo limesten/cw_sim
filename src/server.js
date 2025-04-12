@@ -29,6 +29,7 @@ wss.on('connection', (ws, req) => {
         interval: null,
     };
     clients.set(ws, clientSettings);
+    updateConnectedClientCount();
 
     ws.on('message', (data) => {
         try {
