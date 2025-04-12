@@ -7,20 +7,16 @@ const app = express();
 const wsPort = 3000;
 const tcpPort = 3001;
 
-// Create HTTP server instance
 const wsServer = http.createServer(app);
 
-// Create TCP server instance
 const tcpServer = net.createServer();
 
-// Serve static files
 app.use(express.static('public'));
 
-// Create WebSocket server
 const wss = new WebSocketServer({ server: wsServer });
 
 // Store connected clients with their settings
-const clients = new Map(); // Using Map to store client settings
+const clients = new Map();
 
 // Store connected tcp clients
 let tcpClients = [];
@@ -57,13 +53,11 @@ wss.on('connection', (ws, req) => {
         }
     });
 
-    // Handle client disconnection
     ws.on('close', () => {
         stopContinuousTransmission(ws);
         clients.delete(ws);
     });
 
-    // Handle errors
     ws.on('error', (error) => {
         console.error('WebSocket error:', error);
         stopContinuousTransmission(ws);
@@ -72,7 +66,6 @@ wss.on('connection', (ws, req) => {
 
 });
 
-// TCP connection handler
 tcpServer.on('connection', (socket) => {
     console.log('TCP client connected');
     tcpClients.push(socket);
@@ -86,18 +79,31 @@ tcpServer.on('connection', (socket) => {
     });
 });
 
-// Broadcast weight to tcp clients
+function formatMessage(prefix, weight, suffix) {
+    // Convert control characters to their actual values
+    const prefixBuffer = Buffer.from(prefix.replace(/\\x([0-9A-Fa-f]{2})/g, (_, hex) => 
+        String.fromCharCode(parseInt(hex, 16))));
+    const suffixBuffer = Buffer.from(suffix.replace(/\\x([0-9A-Fa-f]{2})/g, (_, hex) => 
+        String.fromCharCode(parseInt(hex, 16))));
+    const weightBuffer = Buffer.from(weight);
+
+    // Combine all parts into a single message
+    return Buffer.concat([prefixBuffer, weightBuffer, suffixBuffer]);
+}
+
 function broadcastWeight(message) {
-    const { weight } = message;
+    const { prefix, weight, suffix } = message;
+    
+    // Format the complete message
+    const messageBuffer = formatMessage(prefix, weight, suffix);
     
     // Send to all tcp clients
     for (const client of tcpClients) {
-        console.log('Sending weight to tcp client:', weight);
-        client.write(weight);
+        console.log('Broadcasting:', messageBuffer.toString('hex'));
+        client.write(messageBuffer);
     }
 }
 
-// Continuous transmission handlers
 function startContinuousTransmission(ws, message) {
     const clientSettings = clients.get(ws);
     if (!clientSettings) return;
@@ -117,9 +123,8 @@ function startContinuousTransmission(ws, message) {
     }, interval);
 }
 
-// Calculate weight with random variations based on probabilities
 function calculateVariedWeight(baseWeight, variations) {
-    const random = Math.random(); // Random number between 0 and 1
+    const random = Math.random();
     
     if (variations) {
         const { underweight, overweight } = variations;
@@ -152,12 +157,10 @@ function stopContinuousTransmission(ws) {
     clientSettings.continuousMode = false;
 }
 
-// Start the ws server
 wsServer.listen(wsPort, () => {
     console.log(`Server running on port ${wsPort}`);
 });
 
-// Start the tcp server
 tcpServer.listen(tcpPort, () => {
     console.log(`TCP server is ready on port ${tcpPort}`);
 });

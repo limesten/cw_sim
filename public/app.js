@@ -1,6 +1,5 @@
 // UI Elements
 const weightInput = document.getElementById('weightInput');
-const controlCharsSelect = document.getElementById('controlChars');
 const sendOnceButton = document.getElementById('sendOnce');
 const startContinuousButton = document.getElementById('startContinuous');
 const stopContinuousButton = document.getElementById('stopContinuous');
@@ -79,13 +78,18 @@ function validateWeightVariations() {
 }
 
 function sendWeight() {
+    const prefix = prefixInput.value;
     const weight = weightInput.value;
+    const suffix = suffixInput.value;
+
     const message = {
         type: 'weight',
-        weight: weight
+        prefix: prefix,
+        weight: weight,
+        suffix: suffix
     };
     ws.send(JSON.stringify(message));
-    logMessage(`Sent weight: ${weight}`);
+    logMessage(`Sent string: ${prefix}${weight}${suffix}`);
 }
 
 function startContinuous() {
