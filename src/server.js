@@ -69,15 +69,23 @@ wss.on('connection', (ws, req) => {
 tcpServer.on('connection', (socket) => {
     console.log('TCP client connected');
     tcpClients.push(socket);
-
+    updateConnectedClientCount();
     socket.on('data', (data) => {
         console.log('Received data from TCP client:', data);
     });
     socket.on('close', () => {
         tcpClients = tcpClients.filter(client => client !== socket);
         console.log('TCP client disconnected');
+        updateConnectedClientCount();
     });
 });
+
+function updateConnectedClientCount() {
+    const count = tcpClients.length;
+    wss.clients.forEach(client => {
+        client.send(JSON.stringify({ type: 'connectedClients', count }));
+    });
+}
 
 function formatMessage(prefix, weight, suffix) {
     // Convert control characters to their actual values
@@ -87,19 +95,18 @@ function formatMessage(prefix, weight, suffix) {
         String.fromCharCode(parseInt(hex, 16))));
     const weightBuffer = Buffer.from(weight);
 
-    // Combine all parts into a single message
-    return Buffer.concat([prefixBuffer, weightBuffer, suffixBuffer]);
+    return [prefixBuffer, weightBuffer, suffixBuffer]
 }
 
 function broadcastWeight(message) {
     const { prefix, weight, suffix } = message;
     
-    // Format the complete message
-    const messageBuffer = formatMessage(prefix, weight, suffix);
+    const messageFormatted = formatMessage(prefix, weight, suffix);
+
+    const messageBuffer = Buffer.concat(messageFormatted);
     
-    // Send to all tcp clients
+    // Send to all tcp client
     for (const client of tcpClients) {
-        console.log('Broadcasting:', messageBuffer.toString('hex'));
         client.write(messageBuffer);
     }
 }
@@ -111,7 +118,7 @@ function startContinuousTransmission(ws, message) {
     // Stop any existing continuous transmission
     stopContinuousTransmission(ws);
 
-    const { weight, weightsPerMinute, variations } = message;
+    const { prefix, weight, suffix, weightsPerMinute, variations } = message;
     const baseWeight = parseInt(weight);
     const interval = Math.floor(60000 / weightsPerMinute); // Convert weights per minute to milliseconds
 
@@ -119,7 +126,7 @@ function startContinuousTransmission(ws, message) {
     clientSettings.interval = setInterval(() => {
         // Calculate the weight with variations
         const finalWeight = calculateVariedWeight(baseWeight, variations);
-        broadcastWeight({ weight: finalWeight.toString() });
+        broadcastWeight({ prefix, weight: finalWeight.toString(), suffix });
     }, interval);
 }
 

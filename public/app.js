@@ -35,6 +35,11 @@ ws.onerror = (error) => {
 ws.onmessage = (event) => {
     try {
         const message = JSON.parse(event.data);
+        if (message.type === 'connectedClients') {
+            clientCountSpan.textContent = message.count;
+        } else {
+            logMessage(message);
+        }
     } catch (error) {
         console.error('Error processing message:', error);
     }
@@ -93,11 +98,9 @@ function sendWeight() {
 }
 
 function startContinuous() {
-    const weight = parseInt(weightInput.value);
-    if (isNaN(weight) || weight < 0) {
-        logMessage('Error: Weight needs to be a positive number');
-        return;
-    }
+    const prefix = prefixInput.value;
+    const weight = weightInput.value;
+    const suffix = suffixInput.value;
 
     const weightsPerMinute = parseInt(weightsPerMinuteInput.value);
     if (weightsPerMinute < 1 || weightsPerMinute > 600) {
@@ -107,7 +110,9 @@ function startContinuous() {
 
     const message = {
         type: 'startContinuous',
-        weight: weight.toString(),
+        prefix: prefix,
+        weight: weight,
+        suffix: suffix,
         weightsPerMinute: weightsPerMinute,
         variations: {
             underweight: {
