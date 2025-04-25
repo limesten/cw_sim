@@ -1,5 +1,7 @@
 // UI Elements
 const weightInput = document.getElementById('weightInput');
+const prefixInput = document.getElementById('prefixInput');
+const suffixInput = document.getElementById('suffixInput');
 const sendOnceButton = document.getElementById('sendOnce');
 const startContinuousButton = document.getElementById('startContinuous');
 const stopContinuousButton = document.getElementById('stopContinuous');
@@ -13,8 +15,37 @@ const underweightAmountInput = document.getElementById('underweightAmount');
 const overweightFreqInput = document.getElementById('overweightFreq');
 const overweightAmountInput = document.getElementById('overweightAmount');
 
+// Local storage keys
+const STORAGE_KEYS = {
+    prefix: 'cwsim_prefix',
+    weight: 'cwsim_weight',
+    suffix: 'cwsim_suffix'
+};
+
 // WebSocket setup
 const ws = new WebSocket(`ws://${window.location.host}`);
+
+// Load saved values from localStorage
+function loadFromLocalStorage() {
+    if (localStorage.getItem(STORAGE_KEYS.prefix)) {
+        prefixInput.value = localStorage.getItem(STORAGE_KEYS.prefix);
+    }
+    
+    if (localStorage.getItem(STORAGE_KEYS.weight)) {
+        weightInput.value = localStorage.getItem(STORAGE_KEYS.weight);
+    }
+    
+    if (localStorage.getItem(STORAGE_KEYS.suffix)) {
+        suffixInput.value = localStorage.getItem(STORAGE_KEYS.suffix);
+    }
+}
+
+// Save values to localStorage
+function saveToLocalStorage() {
+    localStorage.setItem(STORAGE_KEYS.prefix, prefixInput.value);
+    localStorage.setItem(STORAGE_KEYS.weight, weightInput.value);
+    localStorage.setItem(STORAGE_KEYS.suffix, suffixInput.value);
+}
 
 // WebSocket event handlers
 ws.onopen = () => {
@@ -46,6 +77,10 @@ ws.onmessage = (event) => {
 };
 
 // UI event handlers
+prefixInput.addEventListener('input', saveToLocalStorage);
+weightInput.addEventListener('input', saveToLocalStorage);
+suffixInput.addEventListener('input', saveToLocalStorage);
+
 sendOnceButton.addEventListener('click', () => {
     sendWeight();
 });
@@ -59,6 +94,9 @@ startContinuousButton.addEventListener('click', () => {
 stopContinuousButton.addEventListener('click', () => {
     stopContinuous();
 });
+
+// Load saved values when page loads
+document.addEventListener('DOMContentLoaded', loadFromLocalStorage);
 
 // Helper functions
 function validateWeightVariations() {

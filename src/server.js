@@ -71,9 +71,11 @@ tcpServer.on('connection', (socket) => {
     console.log('TCP client connected');
     tcpClients.push(socket);
     updateConnectedClientCount();
+    /*
     socket.on('data', (data) => {
         console.log('Received data from TCP client:', data);
     });
+    */
     socket.on('close', () => {
         tcpClients = tcpClients.filter(client => client !== socket);
         console.log('TCP client disconnected');
